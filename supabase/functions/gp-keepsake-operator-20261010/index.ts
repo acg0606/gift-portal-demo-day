@@ -18,8 +18,8 @@ function storeConfig() {
 }
 async function storage(path: string, method = 'GET', body?: Uint8Array, mime = 'application/json', upsert = false) {
   const c = storeConfig();
-  return fetch(`${c.url}/storage/v1/object/gp-instant-private/${PREFIX}/${path}`, {
-    method, headers: { ...c.headers, 'Content-Type': mime, 'x-upsert': String(upsert) }, body,
+  return fetch(`${c.url}/storage/v1/object/gp-instant-generated/${PREFIX}/${path}`, {
+    method, headers: { ...c.headers, 'Content-Type': mime === 'application/json' ? 'application/octet-stream' : mime, 'x-upsert': String(upsert) }, body,
     redirect: 'error', signal: AbortSignal.timeout(25000),
   });
 }
