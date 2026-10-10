@@ -83,7 +83,7 @@ async function taskStatus() {
   const record = { ...current, status: task.status, progress: task.progress, creditsConsumed: task.credits_consumed };
   if (task.status === 'success') {
     const u = new URL(task.output?.model_url || '');
-    const allow = ['tripo3d.ai', 'tripo-data.rg1.data.tripo3d.com', 'amazonaws.com'];
+    const allow = ['tripo3d.ai', 'tripo3d.com'];
     if (u.protocol !== 'https:' || u.username || u.password || !allow.some(d => u.hostname === d || u.hostname.endsWith('.' + d))) fail('MODEL_ORIGIN_INVALID', 502);
     const r = await fetch(u, { redirect: 'error', signal: AbortSignal.timeout(40000) });
     if (!r.ok || Number(r.headers.get('content-length')) > 64 * 1024 * 1024) fail('MODEL_DOWNLOAD_FAILED', 502);
@@ -100,7 +100,8 @@ async function taskStatus() {
 }
 Deno.serve(async (req: Request) => {
   try {
-    const token = req.headers.get('Authorization')?.replace(/^Bearer /, '') || '';
+    // The platform also verifies Authorization as a Supabase JWT.
+    const token = req.headers.get('X-Operator-Token') || '';
     if (Date.now() >= EXPIRES || !/^[A-Za-z0-9_-]{43}$/.test(token) || await hash(encode(token)) !== AUTH_HASH) fail('UNAUTHORIZED', 401);
     const action = new URL(req.url).searchParams.get('action') || 'status';
     if (action === 'status' && req.method === 'GET') {
